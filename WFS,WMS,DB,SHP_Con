@@ -1,0 +1,301 @@
+WFS Connection (Geotools 21).
+package plus.swe.ows;
+
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.wfs.WFSDataStore;
+import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.opengis.feature.simple.SimpleFeature;
+
+
+public class WFSConnector {
+
+	public static void main(String[] args) {
+	
+		 String url = "https://data.wien.gv.at/daten/geo/wfs?service=wfs&version=1.1.0&request=getCapabilities";
+		
+		 HashMap connectionParameters = new HashMap();
+		 connectionParameters.put("WFSDataStoreFactory:GET_CAPABILITIES_URL", url);
+		 WFSDataStoreFactory  dsf = new WFSDataStoreFactory();
+	
+		     WFSDataStore dataStore;
+			try {
+				dataStore = dsf.createDataStore(connectionParameters);
+				SimpleFeatureSource source = dataStore.getFeatureSource("ogdwien:OEFFHALTESTOGD");
+		        SimpleFeatureCollection fc = source.getFeatures();
+		        SimpleFeatureIterator wfsFeatures = fc.features();
+		        
+		        
+		     while(wfsFeatures.hasNext()){
+		         SimpleFeature sf = wfsFeatures.next();
+
+		         System.out.println(sf);
+		       
+		     } 
+			} catch (IOException e) {
+							e.printStackTrace();
+			}
+	}
+}
+
+
+
+
+
+WMS Connection 1 (this one saves the file in a local environment and opens it through a web browser):
+ackage plus.swe.ows;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import org.geotools.data.ows.WMSCapabilities;
+import org.geotools.data.wms.WMS1_1_0.GetMapRequest;
+import org.geotools.data.wms.WebMapServer;
+import org.geotools.data.wms.response.GetMapResponse;
+import org.geotools.ows.ServiceException;
+import org.xml.sax.SAXException;
+
+public class WMSConnection {
+
+	public static void main(String[] args) {
+		URL url = null;
+		try {
+			url = new URL("http://maps.heigit.org/osm-wms/service?service=WMS&request=GetCapabilities&version=1.1.1");
+		} catch (MalformedURLException e) {
+
+		}
+
+		WebMapServer wms = null;
+		try {
+			wms = new WebMapServer(url);
+		} catch (IOException e) {
+
+		} catch (ServiceException e) {
+
+		} catch (SAXException e) {
+
+		}
+		WMSCapabilities capabilities = wms.getCapabilities();
+		GetMapRequest request = (GetMapRequest) wms.createGetMapRequest();
+
+		request.setSRS("EPSG:4326");
+		request.setBBox("-71.13,42.32,-71.03,42.42");
+		request.setDimensions("1000", "1000");
+		request.setFormat("image/png");
+		request.setTransparent(true);
+		request.setVersion("1.1.1");
+
+		request.addLayer("osm_auto:all", "default");
+
+		GetMapResponse response = null;
+		try {
+			response = (GetMapResponse) wms.issueRequest(request);
+		} catch (ServiceException | IOException e) {
+
+			e.printStackTrace();
+		}
+		try {
+			BufferedImage image = ImageIO.read(response.getInputStream());
+
+			ImageIO.write(image, "png", new File("C:\\Users\\Usuari\\Desktop\\img.png"));
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		String googlechromePath = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
+		String filepath = "C:\\Users\\Usuari\\Desktop\\img.png";
+
+		String[] parameters = new String[2];
+
+		parameters[0] = googlechromePath;
+		parameters[1] = filepath;
+
+		try {
+			Runtime.getRuntime().exec(parameters);
+		} catch (IOException e) {
+			System.out.println("Wrong path!");
+			e.printStackTrace();
+		}
+
+	}
+
+}
+
+
+
+
+
+
+WMS Connection 2 (it saves the image as an object, which can be called in another class, 
+and there is no need to store the output in our local environment):
+
+package eot_Schlagbauer_Salvans_Servais_Rossboth;
+
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import org.geotools.ows.ServiceException;
+import org.geotools.ows.wms.WMSCapabilities;
+import org.geotools.ows.wms.WebMapServer;
+import org.geotools.ows.wms.request.GetMapRequest;
+import org.geotools.ows.wms.response.GetMapResponse;
+import org.xml.sax.SAXException;
+
+import processing.core.PApplet;
+import processing.core.PImage;
+
+public class WMSConnector extends PApplet {
+
+	PImage wms_image;
+
+	public WMSConnector() {
+		URL url = null;
+		try {
+			url = new URL("http://maps.heigit.org/osm-wms/service?service=WMS&request=GetCapabilities&version=1.1.1");
+		} catch (MalformedURLException e) {
+
+		}
+
+		WebMapServer wms = null;
+		try {
+			wms = new org.geotools.ows.wms.WebMapServer(url);
+		} catch (IOException e) {
+
+		} catch (ServiceException e) {
+
+		} catch (SAXException e) {
+
+		}
+		WMSCapabilities capabilities = wms.getCapabilities();
+		GetMapRequest request = (GetMapRequest) wms.createGetMapRequest();
+
+		request.setSRS("EPSG:4326");
+		request.setBBox("-71.13,42.32,-71.03,42.42");
+		request.setDimensions("1000", "1000");
+		request.setFormat("image/png");
+		request.setTransparent(true);
+		request.setVersion("1.1.1");
+
+		request.addLayer("osm_auto:all", "default");
+
+		GetMapResponse response = null;
+		try {
+			response = (GetMapResponse) wms.issueRequest(request);
+		} catch (ServiceException | IOException e) {
+
+			e.printStackTrace();
+		}
+
+		try {
+			BufferedImage image = ImageIO.read(response.getInputStream());
+			wms_image = new PImage(image);
+			// We would use image writer if we want to store the image somewhere in our
+			// local environment
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public PImage getwms() {   //create a method to get the image whenever we call it
+		return wms_image;
+	}
+
+}
+
+Example of calling the WMS output in another class:
+WMSConnector wmsconnector = new WMSConnector();
+PImage wms_image = wmsconnector.getwms();
+
+
+
+
+
+Database Connector (JDBC library):
+package db_con;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class Acces_db {
+	public static void main(String[] args) {
+
+		try {
+
+			Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/testing", "postgres",
+					"714625");
+			System.out.println("Connected to the PostgreSQL server successfully.");
+			PreparedStatement stat = conn
+					.prepareStatement("SELECT * FROM trips_count WHERE \"start station name\" = 'Ames St at Main St'");
+			ResultSet rs = stat.executeQuery();
+			while (rs.next()) {
+
+				int id = rs.getInt("start station id");
+
+				// System.out.println(rs.getInt(1)+" "+rs.getString(2) + " " + rs.getString(3));
+				System.out.println(id);
+
+			}
+			conn.close();
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+
+	}
+
+}
+
+
+
+
+
+SHP Visualiser:
+package SHPreader;
+
+import java.io.File;
+
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.opengis.feature.simple.SimpleFeature;
+
+public class ShpViz {
+
+	public static void main(String[] args) throws Exception {
+		String url = "C:\\\\Users\\\\Usuari\\\\Desktop\\\\MSc_Geoinformatics\\\\1st_Semester\\\\Software_Development\\\\Java_Work\\\\Visualization\\\\shp\\\\pop_pnt.shp";
+		File file = new File(url);
+		if (!file.exists() || !url.endsWith(".shp")) {
+			throw new Exception("Invalid shapefile filepath: " + url);
+		}
+
+		ShapefileDataStore dataStore = new ShapefileDataStore(file.toURL());
+		SimpleFeatureSource source = dataStore.getFeatureSource();
+		SimpleFeatureCollection fc = source.getFeatures();
+		SimpleFeatureIterator shpFeatures = fc.features();
+
+		while (shpFeatures.hasNext()) {
+			SimpleFeature sf = shpFeatures.next();
+			System.out.println(sf);
+		}
+
+	}
+
+}
+
+
