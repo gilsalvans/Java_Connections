@@ -43,35 +43,6 @@ public class WFSConnector {
 }
 
 		   
- //WMS CONNECTION		
-		/*
-		URL url = null;
-		try {
-		  url = new URL("https://data.stadt-salzburg.at/geodaten/wfs?service=wfs&version=1.1.0&request=getCapabilities");
-		} catch (MalformedURLException e) {
-		 
-		}
-
-		WebMapServer wms = null;
-		try {
-		  wms = new WebMapServer(url);
-		} catch (IOException e) {
-		  //There was an error communicating with the server
-		  //For example, the server is down
-		} catch (ServiceException e) {
-		  //The server returned a ServiceException (unusual in this case)
-		} catch (SAXException e) {
-		  //Unable to parse the response from the server
-		  //For example, the capabilities it returned was not valid
-		}
-		WMSCapabilities capabilities = wms.getCapabilities();
-		System.out.println("Capabilities retrieved!");
-		System.out.println(capabilities);
-	}
-}
-
-
-*/
 
 
 
